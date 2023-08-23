@@ -1,0 +1,86 @@
+-- Create aggregation table in WH02
+
+DROP TABLE IF EXISTS dbo.GrossByDate
+;
+CREATE TABLE dbo.GrossByDate
+(
+    salesdate datetime2(6),
+    gross FLOAT
+)
+
+
+;
+
+insert into dbo.GrossByDate
+select a.* from 
+(select salesdate ,
+    SUM(qty * price) as gross 
+    from dbo.sales    
+    group by salesdate
+)  a
+
+
+;
+-- Create procedure Proc_GrossByDate
+CREATE PROCEDURE dbo.Proc_GrossByDate
+AS
+BEGIN
+
+insert into dbo.GrossByDate
+select a.* from 
+(select salesdate ,
+    SUM(qty * price) as gross 
+    from dbo.sales
+    where salesdate > (select max(salesdate) from dbo.GrossByDate)
+    group by salesdate
+)  a
+
+
+end
+
+GO
+
+
+
+;
+-- SQL query 1
+select *
+into sales_fact
+from sales
+where salesdate <= '2018-12-01'
+;
+select count(*)
+from sales_fact
+
+;
+-- SQL query 2
+insert into sales_fact
+select *
+from sales
+where salesdate > '2018-12-01' and salesdate <= '2018-12-31'
+;
+select count(*)
+from sales_fact
+
+
+;
+-- SQL query 3
+insert into sales_fact
+select *
+from sales
+where salesdate > '2018-12-31' and salesdate <= '2019-02-01'
+;
+select count(*)
+from sales_fact
+
+;
+-- SQL query 4
+insert into sales_fact
+select *
+from sales
+where salesdate > '2019-02-01' and salesdate <= '2019-04-01'
+;
+select count(*)
+from sales_fact
+
+
